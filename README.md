@@ -1,6 +1,8 @@
 # react-go-tutorial
 To-do-list - Reactjs, Golang, Typescript, MongoDB
 - go install github.com/cosmtrek/air@latest  - https://github.com/air-verse/air
+- go get github.com/joho/godotenv
+- go get go.mongodb.org/mongo-driver/mongo
 
 # Equivalent of `npm init` in Go
 
