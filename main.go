@@ -31,6 +31,10 @@ func main() {
 		return c.Status(200).JSON(fiber.Map{"msg": "Hello Golang, Fiber!!! ^_^"})
 	})
 
+	app.Get("/api/todolist", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(todos)
+	})
+
 	app.Post("/api/todolist", func(c *fiber.Ctx) error {
 		todo := &Todo{}
 		if err := c.BodyParser(todo); err != nil {
@@ -58,6 +62,19 @@ func main() {
 			}
 		}
 
+		return c.Status(400).JSON(fiber.Map{"error": "Todo not found"})
+	})
+
+	app.Delete("/api/todolist/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+
+		for i, todo := range todos {
+			if fmt.Sprint(todo.Id) == id {
+				todos = append(todos[:i], todos[i+1:]...)
+
+				return c.Status(200).JSON(fiber.Map{"success": "Delete successfully!"})
+			}
+		}
 		return c.Status(400).JSON(fiber.Map{"error": "Todo not found"})
 	})
 
