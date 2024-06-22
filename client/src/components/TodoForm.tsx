@@ -1,18 +1,51 @@
 import { Button, Flex, Input, Spinner } from "@chakra-ui/react";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useState } from "react";
 import { IoMdAdd } from "react-icons/io";
+import { BASE_URL } from "../App";
 
 const TodoForm = () => {
     const [newTodo, setNewTodo] = useState("");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [isPending, setIsPending] = useState(false);
+    const queryClient = useQueryClient();
 
-    const createTodo = async (e: React.FormEvent) => {
-        e.preventDefault();
-        alert("Todo added!");
-    };
+    const { mutate: createTodo, isPending: isCreating } = useMutation({
+        mutationKey: ["createTodo"],
+        mutationFn: async (e: React.FormEvent) => {
+            e.preventDefault();
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ body: newTodo })
+                })
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || "Something went wrong")
+                }
+
+                setNewTodo("");
+
+                return data;
+
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["todos"] })
+        },
+        onError: (err) => {
+            alert(err.message);
+        }
+    })
+
     return (
-        <form onSubmit={createTodo}>
+        <form onSubmit={(evt) => createTodo(evt)}>
             <Flex gap={2}>
                 <Input
                     type='text'
@@ -27,7 +60,7 @@ const TodoForm = () => {
                         transform: "scale(.97)",
                     }}
                 >
-                    {isPending ? <Spinner size={"xs"} /> : <IoMdAdd size={30} />}
+                    {isCreating ? <Spinner size={"xs"} /> : <IoMdAdd size={30} />}
                 </Button>
             </Flex>
         </form>

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	// "github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,7 +16,7 @@ import (
 )
 
 type Todo struct {
-	Id        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"` // omitempty: để sinh giá trị ngẫu nhiên và ko bị empty and duplicate id
+	Id        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"` // omitempty: để sinh giá trị ngẫu nhiên và ko bị empty and duplicate id
 	Completed bool               `json:"completed"`
 	Body      string             `json:"body"`
 }
@@ -24,16 +25,13 @@ var collection *mongo.Collection
 
 func main() {
 	fmt.Println("Hello word!!!")
-	err := godotenv.Load(".env")
 
-	if err != nil {
-		log.Fatal("Error loading .env file", err)
-	}
+	if os.Getenv("ENV") != "production" {
+		err := godotenv.Load(".env")
 
-	PORT := os.Getenv("PORT")
-
-	if PORT == "" {
-		PORT = "5000"
+		if err != nil {
+			log.Fatal("Error loading .env file", err)
+		}
 	}
 
 	MONGODB_URI := os.Getenv("MONGODB_URI")
@@ -59,7 +57,10 @@ func main() {
 
 	app := fiber.New()
 
-	// todos := []Todo{}
+	// app.Use(cors.New(cors.Config{
+	// 	AllowOrigins: "http://127.0.0.1:5173/",
+	// 	AllowHeaders: "Origin,Content-Type,Accept",
+	// }))
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.Status(200).JSON(fiber.Map{"msg": "Hello Golang, Fiber!!! ^_^"})
@@ -72,6 +73,16 @@ func main() {
 	app.Patch("/api/todolist/:id", updateTodoList)
 
 	app.Delete("/api/todolist/:id", deleteTodoList)
+
+	PORT := os.Getenv("PORT")
+
+	if PORT == "" {
+		PORT = "5000"
+	}
+
+	if os.Getenv("ENV") == "production" {
+		app.Static("/", "./client/dist")
+	}
 
 	log.Fatal(app.Listen(":" + PORT)) // go run .\main.go
 }
