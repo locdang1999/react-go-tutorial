@@ -1,32 +1,36 @@
-import { useState } from "react";
 import { Flex, Spinner, Stack, Text } from "@chakra-ui/react";
 import TodoItem from "./TodoItem";
+import { useQuery } from "@tanstack/react-query";
+import { BASE_URL } from "../App";
+
+export type Todo = {
+  _id: number;
+  body: string;
+  completed: boolean
+}
 
 const TodoList = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isLoading, setIsLoading] = useState(false);
-  const todos = [
-    {
-      _id: 1,
-      body: "Buy groceries",
-      completed: true,
+  const { data: todos, isLoading } = useQuery<Todo[]>({
+    queryKey: ["todos"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(BASE_URL, {
+          method: "GET"
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Something went wrong")
+        }
+
+        return data || [];
+
+      } catch (error) {
+        console.log(error)
+      }
     },
-    {
-      _id: 2,
-      body: "Walk the dog",
-      completed: false,
-    },
-    {
-      _id: 3,
-      body: "Do laundry",
-      completed: false,
-    },
-    {
-      _id: 4,
-      body: "Cook dinner",
-      completed: true,
-    },
-  ];
+  })
+
   return (
     <>
       <Text fontSize={"4xl"} textTransform={"uppercase"} fontWeight={"bold"} textAlign={"center"} my={2}>
@@ -46,8 +50,8 @@ const TodoList = () => {
         </Stack>
       )}
       <Stack gap={3}>
-        {todos?.map((todo) => (
-          <TodoItem key={todo._id} todo={todo} />
+        {todos?.map((todo, idx) => (
+          <TodoItem key={idx} todo={todo} />
         ))}
       </Stack>
     </>
