@@ -62,9 +62,9 @@ func main() {
 	// 	AllowHeaders: "Origin,Content-Type,Accept",
 	// }))
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Status(200).JSON(fiber.Map{"msg": "Hello Golang, Fiber!!! ^_^"})
-	})
+	// app.Get("/", func(c *fiber.Ctx) error {
+	// 	return c.Status(200).JSON(fiber.Map{"msg": "Hello Golang, Fiber!!! ^_^"})
+	// })
 
 	app.Get("/api/todolist", getTodoList)
 
